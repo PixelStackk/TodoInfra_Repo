@@ -1,0 +1,29 @@
+trigger: none # Manual Run
+
+
+pool: Todo_Microservice_Agent
+
+steps:
+- task: TerraformInstaller@1
+  inputs:
+    terraformVersion: 'latest'
+
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/Environments/dev'
+    backendServiceArm: 'Himanshu_service'
+    backendAzureRmResourceGroupName: 'RG-Practice'
+    backendAzureRmStorageAccountName: 'rgpracticestorage'
+    backendAzureRmContainerName: 'rgpracticecontainer'
+    backendAzureRmKey: 'terraform.tfstate'
+
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'custom'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/Environments/dev'
+    outputTo: 'console'
+    customCommand: 'fmt'
+    environmentServiceNameAzureRM: 'Himanshu_service'

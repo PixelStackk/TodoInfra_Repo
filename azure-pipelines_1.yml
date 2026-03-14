@@ -1,0 +1,113 @@
+trigger: none
+parameters:
+- name: ScannigRequired
+  displayName: ScanningRequired
+  type: string
+  default: 'false'
+  values: 
+  - true
+  - false
+
+variables: 
+  workingDir: '$(System.DefaultWorkingDirectory)/Environments/dev'
+  service_connection: 'New_Service'
+
+
+
+
+stages:
+  
+- stage: Build
+  jobs:
+  - job: TerraformInittoPlan
+    displayName: TerraformInittoPlan
+    steps: 
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: $(workingDir)
+        backendServiceArm: 'New_Service'
+        backendAzureRmResourceGroupName: 'RG-Practice'
+        backendAzureRmStorageAccountName: 'rgpracticestorage'
+        backendAzureRmContainerName: 'rgpracticecontainer'
+        backendAzureRmKey: 'terraform.tfstate'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'custom'
+        workingDirectory: $(workingDir)
+        outputTo: 'console'
+        customCommand: 'fmt'
+        environmentServiceNameAzureRM: 'New_Service'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+        workingDirectory: $(workingDir)
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: $(workingDir)
+        environmentServiceNameAzureRM: 'New_Service'
+
+
+- stage: SecurityScanning
+  jobs: 
+    - job: ScanningRequired
+      displayName: tfscan
+      condition: eq(${{ parameters.ScannigRequired }}, 'true')
+      pool: TodoApp-Agent
+      steps:
+      - task: tfsec@1
+        inputs:
+          version: 'v1.26.0'
+          dir: '$(System.DefaultWorkingDirectory)/Environments/dev'
+      
+
+- stage: ManualValidation
+  jobs:
+  - job: ManualValidation
+    displayName: ManualValidation
+    pool: server
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        notifyUsers: 'devopsengineerajay589@gmail.com, brijendrayadav014@gmail.com' 
+        approvers: 'devopsengineerajay589@gmail.com, brijendrayadav014@gmail.com'
+        instructions: 'Approval Required'
+
+- stage: TerraformPlan
+  jobs:
+  - job: TerraformApply 
+    displayName: TerraformApply
+    steps:
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: $(workingDir)
+        backendServiceArm: 'New_Service'
+        backendAzureRmResourceGroupName: 'RG-Practice'
+        backendAzureRmStorageAccountName: 'rgpracticestorage'
+        backendAzureRmContainerName: 'rgpracticecontainer'
+        backendAzureRmKey: 'terraform.tfstate'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: $(workingDir)
+        environmentServiceNameAzureRM: 'New_Service'
+
+  
+
+
