@@ -12,5 +12,25 @@ jobs:
         uses: little-core-labs/install-terraform@v2.0.0
         with:
           version: 4.34.0
-           
-      
+
+      - name: Azure Login
+        uses: Azure/login@v3
+        with:
+          tenant-id: 65bc8c39-1242-4747-b237-239c15b77fed
+          subscription-id: db32f9ec-acc7-4507-90c8-6c0798ff4278
+
+      - name: Terraform init azurerm backend
+        uses: ahmedig/terraform-azurerm-backend@v4
+        with:
+          azure_credentials: "id": "/subscriptions/db32f9ec-acc7-4507-90c8-6c0798ff4278"
+          resource_group_name: "brijendra-rg"
+          container_name: "brijendracontainer"
+          storage_account_name: "brijendrastorage"
+          file_name: terraform.tfstate
+          subscription_id: db32f9ec-acc7-4507-90c8-6c0798ff4278
+          tf_working_directory: .
+                
+                
+  
+        
+        
