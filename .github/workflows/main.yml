@@ -22,7 +22,7 @@ jobs:
       - name: Terraform init azurerm backend
         uses: ahmedig/terraform-azurerm-backend@v4
         with:
-          azure_credentials: "id": "/subscriptions/db32f9ec-acc7-4507-90c8-6c0798ff4278"
+          azure_credentials: "/subscriptions/db32f9ec-acc7-4507-90c8-6c0798ff4278"
           resource_group_name: "brijendra-rg"
           container_name: "brijendracontainer"
           storage_account_name: "brijendrastorage"
