@@ -1,38 +1,39 @@
 name: "Terraform Job"
+
 on: workflow_dispatch
 
 jobs:
   terraform-job:
     runs-on: self-hosted
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v4
 
       - name: Install Terraform
-        uses: little-core-labs/install-terraform@v2.0.0
+        uses: hashicorp/setup-terraform@v3
         with:
-          version: 4.34.0
+          terraform_version: 1.6.6
 
       - name: Azure Login
         uses: Azure/login@v3
         with:
-          tenant-id: 65bc8c39-1242-4747-b237-239c15b77fed
-          subscription-id: db32f9ec-acc7-4507-90c8-6c0798ff4278
+          {
+            "clientSecret": "-6d8Q~O8xNXjgtL3OpQtAg7k1sfKcnyxj_eKvc0H" ,
+            "subscriptionId":  "db32f9ec-acc7-4507-90c8-6c0798ff4278",
+            "tenantId":  "65bc8c39-1242-4747-b237-239c15b77fed",
+            "clientId":  "be774c35-13bd-4c7b-a1a5-f06b9a3a9d3b"
+            }
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=brijendra-rg" \
+            -backend-config="storage_account_name=brijendrastorage" \
+            -backend-config="container_name=brijendracontainer" \
+            -backend-config="key=terraform.tfstate"
 
-      - name: Terraform init azurerm backend
-        uses: ahmedig/terraform-azurerm-backend@v4
-        with:
-          azure_credentials: {
-          "subscriptionId": "db32f9ec-acc7-4507-90c8-6c0798ff4278"
-          }
-          resource_group_name: brijendra-rg
-          container_name: brijendracontainer
-          storage_account_name: brijendrastorage
-          file_name: terraform.tfstate
-          subscription_id: db32f9ec-acc7-4507-90c8-6c0798ff4278
-          tf_working_directory: .
-                
-                
-  
-        
-        
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
