@@ -1,36 +1,78 @@
-name: "Terraform Job"
 
-on: workflow_dispatch
+name: "Dev Terraform Workflow"
 
-jobs:
-  terraform-job:
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main      
+
+permissions:
+  id-token: write
+  contents: read
+  
+jobs: 
+  terraform-init-plan:
     runs-on: self-hosted
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+    
+      - name: Azure Login
+        uses: Azure/login@v2.3.0
+        with:
+          client-id: ff27bcf6-f60c-4a57-8b01-8eee5de2a9cd
+          tenant-id: 0f7010fd-209e-4344-8457-043ffb37143b
+          subscription-id: 1075ec7a-b17a-4f37-bf3f-9d68c4506dc1
+            
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+        working-directory: environments/dev
+        
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false  
+        working-directory: environments/dev
 
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        working-directory: environments/dev        
+      
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
+        working-directory: environments/dev    
+        
+  terraform-apply:    
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main'
+    needs: terraform-init-plan
+    environment: dev
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.6.6
-
+        uses: actions/checkout@v5.0.0
+    
       - name: Azure Login
-        uses: Azure/login@v3
+        uses: Azure/login@v2.3.0
         with:
-          client-id: be774c35-13bd-4c7b-a1a5-f06b9a3a9d3b
-          tenant-id: 65bc8c39-1242-4747-b237-239c15b77fed
-          subscription-id: db32f9ec-acc7-4507-90c8-6c0798ff4278
+          client-id: be774c35-13bd-4c7b-a1a5-f06b9a3a9d3b 
+          tenant-id: 65bc8c39-1242-4747-b237-239c15b77fed 
+          subscription-id: db32f9ec-acc7-4507-90c8-6c0798ff4278   
+          
       - name: Terraform Init
-        run: |
-          terraform init \
-            -backend-config="resource_group_name=brijendra-rg" \
-            -backend-config="storage_account_name=brijendrastorage" \
-            -backend-config="container_name=brijendracontainer" \
-            -backend-config="key=terraform.tfstate"
-
-      - name: Terraform Plan
-        run: terraform plan
+        id: init
+        run: terraform init -input=false  
+        working-directory: environments/dev
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        id: apply
+        run: terraform apply --auto-approve
+        continue-on-error: true
+        working-directory: environments/dev              
+          
