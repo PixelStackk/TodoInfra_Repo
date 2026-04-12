@@ -23,8 +23,8 @@ jobs:
       - name: Azure Login
         uses: Azure/login@v2.3.0
         with:
-          client-id: be774c35-13bd-4c7b-a1a5-f06b9a3a9d3b
-          tenant-id: 65bc8c39-1242-4747-b237-239c15b77fed
+          client-id: 78162dcb-f043-40a8-a18d-21ccbb2ffa09
+          tenant-id: 89fd6166-81c8-4b8b-9b7c-12306da8371e
           subscription-id: 1a3d832a-d69d-49ee-b438-ba5fd2fc00bf
             
       - name: Terraform fmt
@@ -61,9 +61,9 @@ jobs:
       - name: Azure Login
         uses: Azure/login@v2.3.0
         with:
-          client-id: be774c35-13bd-4c7b-a1a5-f06b9a3a9d3b 
-          tenant-id: 65bc8c39-1242-4747-b237-239c15b77fed 
-          subscription-id: db32f9ec-acc7-4507-90c8-6c0798ff4278   
+          client-id: 78162dcb-f043-40a8-a18d-21ccbb2ffa09
+          tenant-id: 89fd6166-81c8-4b8b-9b7c-12306da8371e
+          subscription-id: 1a3d832a-d69d-49ee-b438-ba5fd2fc00bf   
           
       - name: Terraform Init
         id: init
